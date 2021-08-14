@@ -11,6 +11,7 @@ module.exports = gql`
   extend type Mutation {
     register(input: RegisterInput!): RegisterResponse
     login(input: LoginInput!): LoginResponse
+    changePassword(input: ChangePasswordInput!): ChangePasswordResponse
   }
 
   type RegisterResponse {
@@ -29,7 +30,16 @@ module.exports = gql`
     password: String!
   }
 
+  input ChangePasswordInput {
+    currentPassword: String!
+    newPassword: String!
+  }
+
   type LoginResponse {
     token: String!
+  }
+
+  type ChangePasswordResponse {
+    message: String!
   }
 `;

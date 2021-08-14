@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const { AuthenticationError } = require('apollo-server-express');
 const {
   validateRegisterInput,
+  validateChangePasswordInput,
 } = require('../../utils/validators/userValidators');
 const { generateToken } = require('../../utils/generateToken');
 const { User } = require('../../models');
@@ -45,6 +46,38 @@ module.exports = {
         return { user, token };
       }
       throw new AuthenticationError('Invalid credentials');
+    },
+
+    async changePassword(root, { input }, { user = null }) {
+      const { currentPassword, newPassword } = input;
+      if (!user) {
+        throw new Error('You are not allowed to change your password');
+      }
+
+      const { isValid, error } = await validateChangePasswordInput(
+        currentPassword,
+        newPassword,
+      );
+      if (error || !isValid) {
+        throw new Error('Invalid Request Parameters');
+      }
+      const { id } = user;
+
+      const isValidUser = await User.findByPk(id);
+      if (!isValidUser) {
+        throw new Error('User not found');
+      }
+      const isPasswordMatch = await bcrypt.compare(
+        currentPassword,
+        isValidUser.password,
+      );
+      if (!isPasswordMatch) {
+        throw new Error('Password does not match');
+      }
+      await user.update({
+        password: await bcrypt.hash(newPassword, 12),
+      });
+      return { message: 'Password changes' };
     },
   },
 };
