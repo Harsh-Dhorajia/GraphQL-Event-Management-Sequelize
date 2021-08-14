@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
 
   Event.associate = models => {
     Event.belongsTo(models.User, {
-      as: 'users',
+      as: 'user',
       foreignKey: 'userId',
       onDelete: 'CASCADE',
     });

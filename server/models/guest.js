@@ -14,7 +14,7 @@ module.exports = (sequelize, DataTypes) => {
     });
     Guest.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'users',
+      as: 'user',
       onDelete: 'CASCADE',
     });
   };

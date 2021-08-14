@@ -3,6 +3,7 @@ const {
   validateInviteInput,
 } = require('../../utils/validators/eventValidator');
 const { User, Event, Guest } = require('../../models');
+const { pagination } = require('../../utils/pagination');
 
 module.exports = {
   Mutation: {
@@ -112,6 +113,93 @@ module.exports = {
         // eslint-disable-next-line no-console
         console.log(err);
         throw new Error(err);
+      }
+    },
+
+  },
+
+  Query: {
+    // eslint-disable-next-line no-unused-vars
+    async getAllEvents(root, args, { user = null }) {
+      const {
+        limit, offset, order, searchOpt,
+      } = pagination(args.input);
+
+      const events = await Event.findAll({
+        where: searchOpt,
+        limit,
+        offset,
+        order,
+      });
+      return { events, message: 'All events fetch successfully' };
+    },
+
+    async getInvitedUsers(root, args, { user = null }) {
+      try {
+        const { id } = user;
+        const { eventId } = args.input;
+        const event = await Event.findOne({ where: { id: eventId, userId: id } });
+        if (!event) {
+          throw new Error('Event not found');
+        }
+        const guests = await Guest.findAll(
+          {
+            where: { eventId: event.id },
+            include: [
+              {
+                model: User, as: 'user', attributes: ['username', 'email'],
+              },
+            ],
+          },
+        );
+
+        return { message: 'Event details', guests };
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(err);
+        throw new Error(err);
+      }
+    },
+
+    // eslint-disable-next-line no-unused-vars
+    async getEventDetail(root, args, { user = null }) {
+      try {
+        // Get event detail with their invited users
+        const event = await Event.findByPk(args.input.eventId, {
+          include: [
+            { model: User, as: 'user', attributes: ['username', 'email'] },
+          ],
+        });
+        if (!event) throw new Error('Event not found');
+
+        return { message: 'Event details', event };
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        throw new Error(error);
+      }
+    },
+
+    async getAllCreatedEvents(root, args, { user = null }) {
+      try {
+        const { id } = user;
+        const eventOwner = await User.findByPk(id);
+
+        const {
+          limit, offset, order, searchOpt,
+        } = pagination(args.input);
+
+        const events = await eventOwner.getEvents({
+          where: { ...searchOpt, userId: eventOwner.id },
+          limit,
+          offset,
+          order,
+        });
+        return { events, message: 'User Events' };
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(error);
+        throw new Error(error);
       }
     },
   },

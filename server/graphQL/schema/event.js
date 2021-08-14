@@ -6,12 +6,27 @@ module.exports = gql`
     eventName: String!
     date: String!
     description: String!
+    user: User!
   }
 
+  type Guest {
+    id: Int!
+    invitedBy: String!
+    user: User!
+    eventId: Int!
+  }
+
+  extend type Query {
+    getAllEvents(input: getAllEventsInput!): getAllEventsResponse!
+    getInvitedUsers(input: getInvitedUsersInput!): getInvitedUsersResponse
+    getEventDetail(input: getEventDetailInput!): getEventDetailResponse!
+    getAllCreatedEvents(input: getAllCreatedEventsInput!): getAllCreatedEventsResponse!
+  }
   extend type Mutation {
     createEvents(input: createEventInput!): createEventResponse!
     inviteUser(input: inviteUserInput!): inviteUserResponse!
     updateEvent(input: updateEventInput!): updateEventResponse!
+    getAllEvents(input: getAllEventsInput!): getAllEventsResponse!
   }
 
   input inviteUserInput {
@@ -32,6 +47,38 @@ module.exports = gql`
     date: String!
   }
 
+  input getAllEventsInput {
+    limit: Int
+    page: Int
+    sort: String
+    search: String
+  }
+
+  input getInvitedUsersInput {
+    eventId: ID!
+  }
+
+  input getEventDetailInput {
+    eventId: ID!
+  }
+
+  type getAllEventsResponse {
+    message: String!
+    events: [Event!]
+  }
+
+  type getInvitedUsersResponse {
+    message: String!
+    guests: [Guest!]
+  }
+
+  input getAllCreatedEventsInput {
+    limit: Int
+    page: Int
+    sort: String
+    search: String
+  }
+
   type updateEventResponse {
     event: Event!
     message: String!
@@ -46,4 +93,12 @@ module.exports = gql`
     message: String!
   }
 
+  type getEventDetailResponse {
+    event: Event!
+  }
+
+  type getAllCreatedEventsResponse {
+    message: String!
+    events: [Event!]
+  }
 `;
