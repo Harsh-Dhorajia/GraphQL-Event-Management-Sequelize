@@ -1,5 +1,6 @@
 const { gql } = require('apollo-server-express');
 const userType = require('./user');
+const eventType = require('./event');
 
 const rootType = gql`
   type Query {
@@ -10,4 +11,4 @@ const rootType = gql`
   }
 `;
 
-module.exports = [rootType, userType];
+module.exports = [rootType, userType, eventType];

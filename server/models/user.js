@@ -11,5 +11,11 @@ module.exports = (sequelize, DataTypes) => {
     resetPasswordToken: DataTypes.STRING,
     resetPasswordExpires: DataTypes.STRING,
   });
+  User.associate = models => {
+    User.hasMany(models.Event, {
+      foreignKey: 'userId',
+      as: 'events',
+    });
+  };
   return User;
 };
