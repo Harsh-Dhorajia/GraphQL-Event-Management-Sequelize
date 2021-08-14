@@ -11,6 +11,7 @@ module.exports = gql`
   extend type Mutation {
     createEvents(input: createEventInput!): createEventResponse!
     inviteUser(input: inviteUserInput!): inviteUserResponse!
+    updateEvent(input: updateEventInput!): updateEventResponse!
   }
 
   input inviteUserInput {
@@ -22,6 +23,18 @@ module.exports = gql`
     eventName: String!
     description: String!
     date: String!
+  }
+
+  input updateEventInput {
+    eventId: ID!
+    eventName: String!
+    description: String!
+    date: String!
+  }
+
+  type updateEventResponse {
+    event: Event!
+    message: String!
   }
 
   type createEventResponse {

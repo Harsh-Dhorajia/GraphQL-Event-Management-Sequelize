@@ -76,5 +76,43 @@ module.exports = {
         throw new Error(err);
       }
     },
+
+    async updateEvent(root, args, { user = null }) {
+      const {
+        eventName, date, description, eventId,
+      } = args.input;
+      const { isValid, error } = await validateEventInput(
+        eventName,
+        date,
+        description,
+      );
+      if (!isValid || error) {
+        throw new Error('Invalid Request Parameters');
+      }
+      try {
+        const { id } = user;
+
+        // get given event
+        const event = await Event.findByPk(eventId);
+
+        if (!event) {
+          throw new Error('Event not found');
+        }
+        // verify the valid user to update the event
+        if (event.userId !== id) {
+          throw new Error('Only event creators are allow to update the event details');
+        }
+        await event.update({
+          eventName,
+          description,
+          date,
+        });
+        return { message: 'Event updated successfully', event };
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(err);
+        throw new Error(err);
+      }
+    },
   },
 };
