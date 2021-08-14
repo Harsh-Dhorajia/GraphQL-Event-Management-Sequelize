@@ -1,9 +1,14 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const { v4: uuidv4 } = require('uuid');
+const { Op } = require('sequelize');
+const dayjs = require('dayjs');
 const { AuthenticationError } = require('apollo-server-express');
 const {
   validateRegisterInput,
   validateChangePasswordInput,
+  validateForgotPasswordInput,
+  validateResetPasswordInput,
 } = require('../../utils/validators/userValidators');
 const { generateToken } = require('../../utils/generateToken');
 const { User } = require('../../models');
@@ -78,6 +83,52 @@ module.exports = {
         password: await bcrypt.hash(newPassword, 12),
       });
       return { message: 'Password changes' };
+    },
+
+    async forgotPassword(root, { input }) {
+      const { email } = input;
+      const { error } = await validateForgotPasswordInput(email);
+      if (error) {
+        throw new Error('Invalid Request Parameters');
+      }
+      const user = await User.findOne({ where: { email } });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      const token = uuidv4();
+      const expireTime = dayjs().add(10, 'minutes').format();
+
+      await user.update({
+        resetPasswordToken: token,
+        resetPasswordExpires: expireTime,
+      });
+
+      return { message: 'Password reset request successful !' };
+    },
+
+    async resetPassword(root, { input }) {
+      const { newPassword, token } = input;
+      const { error } = await validateResetPasswordInput(newPassword);
+      if (error) {
+        throw new Error('Invalid Request Parameters');
+      }
+      const user = await User.findOne({
+        where: {
+          resetPasswordToken: token,
+          resetPasswordExpires: {
+            [Op.gt]: dayjs().format(),
+          },
+        },
+      });
+      if (user) {
+        await user.update({
+          password: await bcrypt.hash(newPassword, 12),
+          resetPasswordToken: null,
+          resetPasswordExpires: null,
+        });
+        return { message: 'Password reseted successfully !' };
+      }
+      throw new Error('Reset Password request is invlid');
     },
   },
 };

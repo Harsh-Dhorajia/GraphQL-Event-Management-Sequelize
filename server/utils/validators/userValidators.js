@@ -92,7 +92,7 @@ module.exports.validateChangePasswordInput = async (
   }
 };
 
-module.exports.validateResetPasswordInput = async email => {
+module.exports.validateForgotPasswordInput = async email => {
   const resetPasswordSchema = Joi.object().keys({
     email: Joi.string().email().required(),
   });

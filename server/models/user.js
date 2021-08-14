@@ -8,6 +8,8 @@ module.exports = (sequelize, DataTypes) => {
       isUnique: true,
     },
     password: DataTypes.STRING,
+    resetPasswordToken: DataTypes.STRING,
+    resetPasswordExpires: DataTypes.STRING,
   });
   return User;
 };
